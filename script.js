@@ -1041,10 +1041,11 @@ function renderWishes(wishesArray) {
       return;
     }
     const card = document.createElement('div');
-    card.className = 'message-card reveal';
+    card.className = 'message-card';
     
     // Create initials
-    const initials = wish.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    const cleanedName = wish.name.replace(/[^a-zA-Z0-9\s]/g, '');
+    const initials = cleanedName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "🎂";
 
     card.innerHTML = `
       <div class="message-header">
