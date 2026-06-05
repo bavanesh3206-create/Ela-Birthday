@@ -6,10 +6,16 @@ if (window.location.search.includes('clear=true')) {
   localStorage.removeItem('birthdaySiteWishes');
   localStorage.removeItem('birthdaySiteUnlocked');
   localStorage.removeItem('birthdaySiteUser');
+  
+  // Also clear the cloud database
+  const targetBucket = "https://kvdb.io/A4PNJL8vAQBd23uWKJZLDu";
+  fetch(`${targetBucket}/wishes`, { method: 'POST', body: JSON.stringify([]) });
+  fetch(`${targetBucket}/answers`, { method: 'POST', body: JSON.stringify([]) });
+
   window.location.href = window.location.pathname; // Redirect to clean URL
 }
 
-const DB_URL = "https://kvdb.io/ElaBirthdayStore_bavanesh_3206";
+const DB_URL = "https://kvdb.io/A4PNJL8vAQBd23uWKJZLDu";
 
 // One-time automatic reset of legacy test data/wishes
 if (!localStorage.getItem('birthdaySiteCleanResetDone')) {
@@ -403,8 +409,20 @@ function submitAnswer() {
 }
 
 async function saveAnswersPermanently(name, relation, answers) {
-  const allData = localStorage.getItem('birthdaySiteAllAnswers');
-  const list = allData ? JSON.parse(allData) : [];
+  let list = [];
+  try {
+    console.log("Fetching latest answers from cloud to merge...");
+    const res = await fetch(`${DB_URL}/answers`);
+    if (res.ok) {
+      list = await res.json();
+    } else {
+      const allData = localStorage.getItem('birthdaySiteAllAnswers');
+      list = allData ? JSON.parse(allData) : [];
+    }
+  } catch (e) {
+    const allData = localStorage.getItem('birthdaySiteAllAnswers');
+    list = allData ? JSON.parse(allData) : [];
+  }
   
   list.push({
     name: name,
@@ -487,12 +505,11 @@ async function loadCloudData() {
       console.log("Loaded wishes from cloud successfully:", wishes);
       saveLocalWishes(wishes);
     } else {
+      console.log("Wishes key not found or error. Loading local wishes fallback.");
       wishes = getLocalWishes();
       if (wishes.length === 0) {
         wishes = DEFAULT_WISHES;
       }
-      console.log("Initializing cloud wishes database...");
-      await saveCloudWishes(wishes);
     }
     renderWishes(wishes);
   } catch (e) {
@@ -508,7 +525,7 @@ async function loadCloudData() {
       console.log("Loaded quick answers from cloud successfully:", answers);
       localStorage.setItem('birthdaySiteAllAnswers', JSON.stringify(answers));
     } else {
-      console.log("No answers found in cloud DB yet.");
+      console.log("No answers found in cloud DB or error:", answersRes.status);
     }
     renderAllAnswers();
   } catch (e) {
@@ -590,6 +607,8 @@ function unlockSiteInstant() {
 
   // Render all answers
   renderAllAnswers();
+  // Render wishes
+  renderWishes(getLocalWishes());
   startFloatShuffle();
 }
 
