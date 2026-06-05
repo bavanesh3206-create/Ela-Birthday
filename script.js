@@ -1041,6 +1041,10 @@ function renderWishes(wishesArray) {
 
   // Render cards sorted by timestamp descending
   [...wishesArray].sort((a,b) => b.time - a.time).forEach(wish => {
+    if (!wish || typeof wish !== 'object' || !wish.name || !wish.message || !wish.relation) {
+      console.warn("Skipping malformed wish:", wish);
+      return;
+    }
     const card = document.createElement('div');
     card.className = 'message-card reveal';
     
