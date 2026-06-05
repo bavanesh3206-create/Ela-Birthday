@@ -3,6 +3,7 @@
 // Database reset utility via URL parameter (?clear=true)
 if (window.location.search.includes('clear=true')) {
   localStorage.removeItem('birthdaySiteAllAnswers');
+  localStorage.removeItem('birthdaySiteAnswers');
   localStorage.removeItem('birthdaySiteWishes');
   localStorage.removeItem('birthdaySiteUnlocked');
   localStorage.removeItem('birthdaySiteUser');
@@ -18,9 +19,10 @@ if (window.location.search.includes('clear=true')) {
 const DB_URL = "https://kvdb.io/A4PNJL8vAQBd23uWKJZLDu";
 
 // One-time automatic reset / force logout of legacy test data across all devices
-const DB_VERSION = "reset_2026_06_05_v3";
+const DB_VERSION = "reset_2026_06_05_v4";
 if (localStorage.getItem('birthdaySiteDbVersion') !== DB_VERSION) {
   localStorage.removeItem('birthdaySiteAllAnswers');
+  localStorage.removeItem('birthdaySiteAnswers');
   localStorage.removeItem('birthdaySiteWishes');
   localStorage.removeItem('birthdaySiteUnlocked');
   localStorage.removeItem('birthdaySiteUser');
@@ -448,15 +450,6 @@ async function saveAnswersPermanently(name, relation, answers) {
 }
 
 function renderAllAnswers() {
-  // Migration safeguard for legacy answers
-  const allData = localStorage.getItem('birthdaySiteAllAnswers');
-  if (!allData) {
-    const legacyAnswers = localStorage.getItem('birthdaySiteAnswers');
-    if (legacyAnswers) {
-      saveAnswersPermanently("Elavarasan (Appu)", "Birthday Boy", JSON.parse(legacyAnswers));
-    }
-  }
-
   const updatedData = localStorage.getItem('birthdaySiteAllAnswers');
   const list = updatedData ? JSON.parse(updatedData) : [];
   console.log("Rendering all answers. Current list loaded:", list);
