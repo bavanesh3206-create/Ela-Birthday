@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Happy Birthday Elavarasan (Appu) — A premium celebration" />
+  <title>Happy Birthday Annaa ❤️ | Appu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600;700&family=Dancing+Script:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="site-locked">
+  <div id="memoryShuffleLayer" class="memory-shuffle-layer" aria-hidden="true"></div>
+  <div id="blastFlash" class="blast-flash" aria-hidden="true"></div>
+
+  <div id="gateOverlay" class="gate-overlay" role="dialog" aria-modal="true" aria-label="Birthday surprise">
+    <div class="gate-particles" id="gateParticles" aria-hidden="true"></div>
+
+    <div class="gate-step gate-step-active" id="gateStepWelcome" data-step="welcome">
+      <div class="gate-card glass-card gate-pop">
+        <p class="gate-eyebrow animate-shimmer">09 June 2026</p>
+        <h1 class="gate-title">Welcome✨</h1>
+        <p class="gate-hint">To begin, please tell us are you Elavarsan:</p>
+        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+          <button type="button" class="gate-btn gate-btn-primary" id="gateUserEla">
+            <span>🎂 Yes, I am Elavarasan</span>
+          </button>
+          <button type="button" class="gate-btn" id="gateUserGuest" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+            <span>🌟 No, I not Elavarasan</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="gate-step" id="gateStepGuestInfo" data-step="guest-info" hidden>
+      <div class="gate-card glass-card gate-pop">
+        <h2 class="gate-title-sm">Tell us about yourself ✨</h2>
+        <p class="gate-hint">Please enter your details to start the quick question quiz for Appu:</p>
+        <div class="wish-form" style="text-align: left; display: flex; flex-direction: column; gap: 15px;">
+          <div class="wish-form-row" style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="gateGuestName" style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--primary); font-weight: 600;">Your name</label>
+            <input type="text" id="gateGuestName" placeholder="e.g. Amma, Ravi" required maxlength="60" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px 16px; color: var(--text-primary); font-family: var(--font-main); font-size: 14px; outline: none;" />
+          </div>
+          <div class="wish-form-row" style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="gateGuestRelation" style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--primary); font-weight: 600;">Family / Friend</label>
+            <input type="text" id="gateGuestRelation" placeholder="e.g. Mother, Best Friend" required maxlength="60" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px 16px; color: var(--text-primary); font-family: var(--font-main); font-size: 14px; outline: none;" />
+          </div>
+          <button type="button" class="gate-btn gate-btn-primary" id="gateSubmitGuestInfo" style="margin-top: 10px;">Proceed 🚀</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="gate-step" id="gateStepWait" data-step="wait" hidden>
+      <div class="gate-card glass-card">
+        <div class="gate-loader-ring" aria-hidden="true"></div>
+        <h2 class="gate-title-sm">Preparing your surprise…</h2>
+        <p class="gate-wait-msg" id="gateWaitMsg">Family messages are loading</p>
+        <div class="gate-progress-wrap">
+          <div class="gate-progress-bar" id="gateProgressBar"></div>
+        </div>
+        <p class="gate-timer-text"><span id="gateTimerSec">10</span> seconds</p>
+      </div>
+    </div>
+
+    <div class="gate-step" id="gateStepQuestion" data-step="question" hidden>
+      <div class="gate-card glass-card gate-pop">
+        <p class="gate-eyebrow" id="gateQuestionProgress">Quick Question 1 of 5</p>
+        <h2 class="gate-title-sm" id="gateQuestionText"></h2>
+        <label class="gate-label" for="gateAnswer">Your answer</label>
+        <textarea id="gateAnswer" class="gate-input" rows="3" placeholder="Type your answer here…" maxlength="500"></textarea>
+        <p class="gate-char-count" id="gateCharCount">0 characters</p>
+        <button type="button" class="gate-btn gate-btn-primary" id="gateSubmitAnswer">Next Question →</button>
+      </div>
+    </div>
+
+    <div class="gate-step" id="gateStepCelebrate" data-step="celebrate" hidden>
+      <div class="gate-card glass-card gate-pop">
+        <h2 class="gate-title-sm">All done, Annaa! 🎉</h2>
+        <p class="gate-hint">Your answers are saved.<br />Get ready — the website will blast with celebration!</p>
+        <button type="button" class="gate-btn gate-btn-celebrate" id="gateLetsCelebrate">
+          <span>Let's Celebrate 🎂</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="particles" aria-hidden="true"></div>
+  <div class="glow-orbs" aria-hidden="true">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="orb orb-3"></span>
+  </div>
+
+  <main id="mainSite" class="main-site" aria-hidden="true">
+    <nav class="nav glass-nav" id="nav">
+      <a href="#hero" class="nav-logo">Mr.Ela ✨</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#memories">Memories</a></li>
+        <li><a href="#wishes">Messages</a></li>
+        <li><a href="#universe">Universe</a></li>
+        <li><a href="#letter">Letter</a></li>
+        <li><a href="#future">Future</a></li>
+        <li><a href="#yourAnswers">Answers</a></li>
+        <li><a href="#finale">Birthday</a></li>
+        <li class="nav-auth-item"><button type="button" class="auth-btn logout-btn" id="logoutBtn">Logout</button></li>
+      </ul>
+      <button class="music-btn glass-pill" id="musicBtn" aria-label="Toggle background music">
+        <span class="music-icon">🎵</span>
+        <span class="music-label">Music</span>
+      </button>
+    </nav>
+
+    <audio id="bgMusic" loop preload="auto">
+      <source src="music/birthday-music.mp3" type="audio/mpeg" />
+    </audio>
+
+    <section id="hero" class="section hero">
+      <div class="hero-content reveal">
+        <p class="hero-eyebrow">09 June 2026 · Elavarasan</p>
+        <h1 class="hero-title">Happy Birthday Annaa <span class="heart-pulse">❤️</span></h1>
+        <p class="hero-subtitle">Your are the most Expensive gift to me.. Annaa</p>
+        <blockquote class="hero-quote glass-quote">
+          <p>"Some people make life brighter just by being in it. You are one of them."</p>
+        </blockquote>
+        <div class="countdown glass-card" id="countdown">
+          <p class="countdown-label">Countdown to your special day</p>
+          <div class="countdown-grid" id="countdownGrid">
+            <div class="countdown-item"><span id="cdDays">--</span><small>Days</small></div>
+            <div class="countdown-item"><span id="cdHours">--</span><small>Hours</small></div>
+            <div class="countdown-item"><span id="cdMins">--</span><small>Mins</small></div>
+            <div class="countdown-item"><span id="cdSecs">--</span><small>Secs</small></div>
+          </div>
+          <div class="countdown-complete hidden" id="countdownComplete">
+            <span class="complete-burst">🎉</span>
+            <p>Your day has arrived! Happy Birthday, Annaa!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slider-wrap glass-card reveal delay-1">
+        <div class="slider" id="photoSlider"></div>
+      </div>
+    </section>
+
+    <section id="memories" class="section memories-gallery-section">
+      <header class="section-header reveal">
+        <h2>Memory Pictures</h2>
+        <p>Your photos float and shuffle across the whole website</p>
+      </header>
+      <div class="memories-mosaic reveal" id="memoriesMosaic"></div>
+    </section>
+
+    <section id="wishes" class="section wishes-section">
+      <header class="section-header reveal">
+        <span class="section-tag">Family & Friends</span>
+        <h2>Wish to Appu</h2>
+        <p>Type wishes, advice, motivation, memories, gratitude & more — saved for Elavarasan</p>
+      </header>
+
+      <div class="wish-form-wrap glass-card reveal">
+        <h3 class="wish-form-title">Write a message for Elavarasan</h3>
+        <form id="wishForm" class="wish-form">
+          <div class="wish-form-row">
+            <label for="wishName">Your name</label>
+            <input type="text" id="wishName" required placeholder="" maxlength="60" />
+          </div>
+          <div class="wish-form-row">
+            <label for="wishRelation">Family / Friend</label>
+            <input type="text" id="wishRelation" required placeholder="e.g. brother,sister" maxlength="60" />
+          </div>
+
+          <div class="wish-form-row">
+            <label for="wishMessage">Your message</label>
+            <textarea id="wishMessage" required rows="4" placeholder="Write from your heart…" maxlength="600"></textarea>
+          </div>
+          <button type="submit" class="gate-btn gate-btn-primary">Save Message</button>
+        </form>
+        <p class="wish-form-note" id="wishFormNote"></p>
+      </div>
+
+
+      <div class="messages-wall" id="messagesWall">
+        <p class="messages-empty" id="messagesEmpty">No messages yet. Family & friends — type your message above!</p>
+      </div>
+    </section>
+
+    <section id="universe" class="section universe-section">
+      <div class="cosmic-card reveal" id="cosmicCard">
+        <div class="stars-layer" aria-hidden="true"></div>
+        <div class="cosmic-content">
+          <h2>Message From The Universe ✨</h2>
+          <div class="cosmic-text">
+            <p>Dear Annaa,</p>
+            <p>Your offer letter is already written by this universe.</p>
+            <p>The opportunities meant for you are already on their way.<br />
+            Keep learning.<br />
+            Keep believing.<br />
+            Keep moving forward.</p>
+            <p class="cosmic-highlight">What belongs to you will never miss you.</p>
+            <p>Trust the timing.<br />
+            Trust the process.<br />
+            Trust yourself.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="letter" class="section letter-section">
+      <div class="letter-paper glass-card reveal">
+        <h2 class="letter-title">Letter To My Anna</h2>
+        <div class="letter-body handwriting">
+          <p>Dear Annaa,</p>
+          <p>From childhood memories to today's dreams, We've always been Same admire..</p>
+          <p>Life may not always be easy, but I want You to remember that any situation We face challenges - i am always with you.</p>
+
+          Keep making our family proud.<br />
+          Never stop believing in yourself.</p>
+          <p>No One Can Replace Him.</p>
+          <p>You are the Only Person to motivate and guide me anytime in Any Sittuation...</p>
+          <p>Thank you for being annaa...</p>
+          <p class="letter-closing">Happy Birthday, Annaa ❤️</p>
+          <p class="letter-sign">With love,<br /><strong>Bavanesh_R</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="future" class="section future-horizon-section">
+      <header class="section-header reveal">
+      
+        <h2>Our Future Path</h2>
+        <p>A golden roadmap — dreams waiting on loading...</p>
+      </header>
+      <div class="horizon-road reveal">
+        <div class="horizon-sun" aria-hidden="true"></div>
+        <div class="horizon-path-line" aria-hidden="true"></div>
+        <article class="horizon-milestone glass-card reveal" data-mile="1">
+          <span class="horizon-year">Near Future</span>
+          <h3>🎯 Dream Job</h3>
+          <p>The role you prepared for — your name on the offer letter.</p>
+        </article>
+        <article class="horizon-milestone glass-card reveal" data-mile="2">
+          <span class="horizon-year">Growing</span>
+          <h3>📈 Career Rise</h3>
+          <p>Skills, confidence, and respect — step by step to the top.</p>
+        </article>
+        <article class="horizon-milestone glass-card reveal" data-mile="3">
+          <span class="horizon-year">Stable</span>
+          <h3>💰 Financial Peace</h3>
+          <p>Freedom to help family and build the life you imagine.</p>
+        </article>
+        <article class="horizon-milestone glass-card reveal" data-mile="4">
+          <span class="horizon-year">Strong</span>
+          <h3>💪 Health & Energy</h3>
+          <p>Body and mind strong enough to enjoy every win.</p>
+        </article>
+        <article class="horizon-milestone glass-card reveal" data-mile="5">
+          <span class="horizon-year">Blessed</span>
+          <h3>🏡 Happy Family Life</h3>
+          <p>Love, laughter, festivals, and home full of warmth.</p>
+        </article>
+        <article class="horizon-milestone glass-card reveal" data-mile="6">
+          <span class="horizon-year">Beyond</span>
+          <h3>✨ Unlimited Success</h3>
+          <p>No limits — only new chapters written by us.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="yourAnswers" class="section answers-section">
+      <header class="section-header reveal">
+        <span class="section-tag">Quick Messages</span>
+        <h2>Appu's Quick Answers</h2>
+        <p>Answers from Elavarasan (Appu) to the quick questions</p>
+      </header>
+      <div class="answers-list" id="savedAnswersList"></div>
+      <p class="answers-empty hidden" id="answersEmpty">Appu's quick answers will appear here once submitted.</p>
+    </section>
+
+    <section id="finale" class="section finale-section">
+      <canvas id="fireworks" aria-hidden="true"></canvas>
+      <div id="confetti" aria-hidden="true"></div>
+      <div class="balloons" aria-hidden="true" id="balloons"></div>
+      <div class="finale-content reveal">
+        <p class="finale-eyebrow">With all our love</p>
+        <h1 class="finale-title">Once Again Happy Birthday Annaa <span class="heart-pulse">❤️</span></h1>
+        <p class="finale-quote">"May this year bring endless opportunities, unforgettable memories, and the success you truly deserve."</p>
+        <p class="finale-name">— Elavarasan · 09 June 2026 —</p>
+        <button type="button" class="celebrate-btn glass-pill" id="celebrateBtn">Celebrate Again 🎆</button>
+      </div>
+    </section>
+
+    <footer class="footer glass-nav">
+      <p>Made with love for <strong>Elavarasan</strong> · 09 June 2026</p>
+      <p class="footer-sub">From Bavanesh, with all our hearts ❤️</p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
