@@ -21,6 +21,11 @@ if (!localStorage.getItem('birthdaySiteCleanResetDone')) {
 // 1. Memory Assets configuration
 const MEMORY_PHOTOS = [
   "Ela_Pic/1651499041164-01.jpg",
+  "Ela_Pic/School_Pic_1.jpg",
+  "Ela_Pic/School_Pic_2.jpg",
+  "Ela_Pic/School_Pic_3.jpg",
+  "Ela_Pic/School_Pic_4.jpg",
+  "Ela_Pic/School_Pic_5.jpg",
   "Ela_Pic/20190811_143901~2.jpg",
   "Ela_Pic/20250829_081902.jpg",
   "Ela_Pic/20260130_231923.jpg",
@@ -32,8 +37,8 @@ const MEMORY_PHOTOS = [
   "Ela_Pic/IMG_20230610_183203_172.jpg",
   "Ela_Pic/IMG_20260105_132523.jpg",
   "Ela_Pic/Little_Appu.png",
-  "Ela_Pic/MCE_0847 (1).jpg",
-  "Ela_Pic/Me_Amma (2).png",
+  "Ela_Pic/MCE_0847_1.jpg",
+  "Ela_Pic/Me_Amma_2.png",
   "Ela_Pic/Me_Amma.png",
   "Ela_Pic/Me_Dad.png",
   "Ela_Pic/Pic_Bhunaa.png",
@@ -63,7 +68,7 @@ const MEMORY_PHOTOS = [
   "Ela_Pic/file_000000005dec71fabfe2cff397e2df01.png",
   "Ela_Pic/file_000000007a1c71fa83a24bb21fbfa53d.png",
   "Ela_Pic/file_00000000ea887207bd81d0f5fad3776b.png",
-  "Ela_Pic/our First movie.png"
+  "Ela_Pic/our_First_movie.png"
 ];
 
 const MEMORY_VIDEOS = [];
@@ -748,7 +753,12 @@ function setupMemoriesGrid() {
       let label = '';
       let tag = 'Appu';
 
-      if (filename.includes('IMG_2020')) { label = 'College Days'; tag = '2020'; }
+      if (filename === 'School_Pic_1.jpg') { label = 'College Friends'; tag = '2022'; }
+      else if (filename === 'School_Pic_2.jpg') { label = 'School Life - XII "C"'; tag = '2019'; }
+      else if (filename === 'School_Pic_3.jpg') { label = 'School Life - 8th "C"'; tag = '2015'; }
+      else if (filename === 'School_Pic_4.jpg') { label = 'School Life - 9th "B"'; tag = '2016'; }
+      else if (filename === 'School_Pic_5.jpg') { label = 'School Life - 10th "D"'; tag = '2017'; }
+      else if (filename.includes('IMG_2020')) { label = 'College Days'; tag = '2020'; }
       else if (filename.includes('IMG_2022') || filename.includes('WA0007')) { label = 'School/Friends'; tag = '2022'; }
       else if (filename.includes('2025')) { label = 'Family Travels'; tag = '2025'; }
       else if (filename.includes('2026') || filename.includes('WA0001')) { label = 'Recent Memory'; tag = '2026'; }
