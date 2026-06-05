@@ -420,12 +420,13 @@ function renderAllAnswers() {
   if (!allData) {
     const legacyAnswers = localStorage.getItem('birthdaySiteAnswers');
     if (legacyAnswers) {
-      saveAnswersPermanently("Elavarasan ", "Birthday Boy", JSON.parse(legacyAnswers));
+      saveAnswersPermanently("Elavarasan (Appu)", "Birthday Boy", JSON.parse(legacyAnswers));
     }
   }
 
   const updatedData = localStorage.getItem('birthdaySiteAllAnswers');
   const list = updatedData ? JSON.parse(updatedData) : [];
+  console.log("Rendering all answers. Current list loaded:", list);
   
   if (list.length === 0) {
     answersEmpty.classList.remove('hidden');
@@ -436,7 +437,9 @@ function renderAllAnswers() {
   answersEmpty.classList.add('hidden');
   
   savedAnswersList.innerHTML = list.map(userEntry => {
-    const cleanedName = userEntry.name.replace(/[^a-zA-Z0-9\s]/g, '');
+    const name = userEntry.name || "Elavarasan (Appu)";
+    const relation = userEntry.relation || "Birthday Boy";
+    const cleanedName = name.replace(/[^a-zA-Z0-9\s]/g, '');
     const initials = cleanedName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2) || "🎂";
     
     const qaHtml = (userEntry.answers || []).map(qa => `
@@ -447,29 +450,29 @@ function renderAllAnswers() {
     `).join('');
     
     return `
-      <div class="answer-card glass-card reveal" style="padding: 24px; margin-bottom: 20px;">
+      <div class="answer-card glass-card" style="padding: 24px; margin-bottom: 20px;">
         <div class="message-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
           <div class="message-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--bg-color); flex-shrink: 0;">${initials}</div>
           <div class="message-meta" style="flex-grow: 1; min-width: 0; text-align: left;">
-            <div class="message-name" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">${userEntry.name}</div>
-            <div class="message-rel" style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">${userEntry.relation}</div>
+            <div class="message-name" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">${name}</div>
+            <div class="message-rel" style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">${relation}</div>
           </div>
         </div>
         ${qaHtml}
       </div>
     `;
   }).join('');
-  
-  initScrollReveals();
 }
 
 function unlockCelebration() {
+  console.log("Unlocking celebration. Current user:", currentUserName, "Relation:", currentUserRelation, "Answers count:", userAnswers.length);
   // Store Answers (only if Elavarasan, because guests skip quiz)
-  if (currentUserName === "Elavarasan" && userAnswers.length > 0) {
+  const isEla = currentUserName.includes("Elavarasan") || currentUserRelation === "Birthday Boy";
+  if (isEla && userAnswers.length > 0) {
     saveAnswersPermanently(currentUserName, currentUserRelation, userAnswers);
   }
   localStorage.setItem('birthdaySiteUnlocked', 'true');
-  localStorage.setItem('birthdaySiteUser', currentUserName === "Elavarasan" ? 'elavarasan' : 'guest');
+  localStorage.setItem('birthdaySiteUser', isEla ? 'elavarasan' : 'guest');
 
   // Trigger unlock animations
   gateOverlay.style.opacity = '0';
