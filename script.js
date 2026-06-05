@@ -575,11 +575,8 @@ async function unlockCelebration() {
   body.classList.remove('site-locked');
   mainSite.removeAttribute('aria-hidden');
 
-  // Render answers
-  renderAllAnswers();
-  
-  // Render wishes from localStorage
-  renderWishes(getLocalWishes());
+  // Load and render latest wishes and answers from the cloud database
+  loadCloudData();
 
   // Play background music
   bgMusic.volume = 0.5;
@@ -605,10 +602,8 @@ function unlockSiteInstant() {
   gateOverlay.style.visibility = 'hidden';
   mainSite.removeAttribute('aria-hidden');
 
-  // Render all answers
-  renderAllAnswers();
-  // Render wishes
-  renderWishes(getLocalWishes());
+  // Load and render latest wishes and answers from the cloud database
+  loadCloudData();
   startFloatShuffle();
 }
 
