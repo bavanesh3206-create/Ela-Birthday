@@ -17,12 +17,14 @@ if (window.location.search.includes('clear=true')) {
 
 const DB_URL = "https://kvdb.io/A4PNJL8vAQBd23uWKJZLDu";
 
-// One-time automatic reset of legacy test data/wishes
-if (!localStorage.getItem('birthdaySiteCleanResetDone')) {
+// One-time automatic reset / force logout of legacy test data across all devices
+const DB_VERSION = "reset_2026_06_05_v3";
+if (localStorage.getItem('birthdaySiteDbVersion') !== DB_VERSION) {
   localStorage.removeItem('birthdaySiteAllAnswers');
   localStorage.removeItem('birthdaySiteWishes');
   localStorage.removeItem('birthdaySiteUnlocked');
   localStorage.removeItem('birthdaySiteUser');
+  localStorage.setItem('birthdaySiteDbVersion', DB_VERSION);
   localStorage.setItem('birthdaySiteCleanResetDone', 'true');
 }
 
