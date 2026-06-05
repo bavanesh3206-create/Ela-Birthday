@@ -9,6 +9,8 @@ if (window.location.search.includes('clear=true')) {
   window.location.href = window.location.pathname; // Redirect to clean URL
 }
 
+const DB_URL = "https://kvdb.io/ElaBirthdayStore_bavanesh_3206";
+
 // One-time automatic reset of legacy test data/wishes
 if (!localStorage.getItem('birthdaySiteCleanResetDone')) {
   localStorage.removeItem('birthdaySiteAllAnswers');
@@ -188,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCountdown();
   setupSlider();
   setupMemoriesGrid();
-  setupWishWall();
+  loadCloudData();
 
   const isUnlocked = localStorage.getItem('birthdaySiteUnlocked') === 'true';
   if (isUnlocked) {
@@ -400,7 +402,7 @@ function submitAnswer() {
   }
 }
 
-function saveAnswersPermanently(name, relation, answers) {
+async function saveAnswersPermanently(name, relation, answers) {
   const allData = localStorage.getItem('birthdaySiteAllAnswers');
   const list = allData ? JSON.parse(allData) : [];
   
@@ -412,6 +414,17 @@ function saveAnswersPermanently(name, relation, answers) {
   });
   
   localStorage.setItem('birthdaySiteAllAnswers', JSON.stringify(list));
+  console.log("Saved to local storage. Current list:", list);
+
+  try {
+    await fetch(`${DB_URL}/answers`, {
+      method: 'POST',
+      body: JSON.stringify(list)
+    });
+    console.log("Saved answers to cloud successfully!");
+  } catch (e) {
+    console.error("Failed to save answers to cloud:", e);
+  }
 }
 
 function renderAllAnswers() {
@@ -464,12 +477,65 @@ function renderAllAnswers() {
   }).join('');
 }
 
-function unlockCelebration() {
+async function loadCloudData() {
+  try {
+    console.log("Loading wishes from cloud DB...");
+    const wishesRes = await fetch(`${DB_URL}/wishes`);
+    let wishes = [];
+    if (wishesRes.ok) {
+      wishes = await wishesRes.json();
+      console.log("Loaded wishes from cloud successfully:", wishes);
+      saveLocalWishes(wishes);
+    } else {
+      wishes = getLocalWishes();
+      if (wishes.length === 0) {
+        wishes = DEFAULT_WISHES;
+      }
+      console.log("Initializing cloud wishes database...");
+      await saveCloudWishes(wishes);
+    }
+    renderWishes(wishes);
+  } catch (e) {
+    console.error("Failed to load wishes from cloud, falling back to local:", e);
+    renderWishes(getLocalWishes());
+  }
+
+  try {
+    console.log("Loading quick answers from cloud DB...");
+    const answersRes = await fetch(`${DB_URL}/answers`);
+    if (answersRes.ok) {
+      const answers = await answersRes.json();
+      console.log("Loaded quick answers from cloud successfully:", answers);
+      localStorage.setItem('birthdaySiteAllAnswers', JSON.stringify(answers));
+    } else {
+      console.log("No answers found in cloud DB yet.");
+    }
+    renderAllAnswers();
+  } catch (e) {
+    console.error("Failed to load answers from cloud, falling back to local:", e);
+    renderAllAnswers();
+  }
+}
+
+async function saveCloudWishes(wishesArray) {
+  saveLocalWishes(wishesArray);
+  try {
+    await fetch(`${DB_URL}/wishes`, {
+      method: 'POST',
+      body: JSON.stringify(wishesArray)
+    });
+    console.log("Saved wishes to cloud successfully!");
+  } catch (e) {
+    console.error("Failed to save wishes to cloud:", e);
+  }
+}
+
+async function unlockCelebration() {
   console.log("Unlocking celebration. Current user:", currentUserName, "Relation:", currentUserRelation, "Answers count:", userAnswers.length);
   // Store Answers (only if Elavarasan, because guests skip quiz)
   const isEla = currentUserName.includes("Elavarasan") || currentUserRelation === "Birthday Boy";
   if (isEla && userAnswers.length > 0) {
-    saveAnswersPermanently(currentUserName, currentUserRelation, userAnswers);
+    await saveAnswersPermanently(currentUserName, currentUserRelation, userAnswers);
   }
   localStorage.setItem('birthdaySiteUnlocked', 'true');
   localStorage.setItem('birthdaySiteUser', isEla ? 'elavarasan' : 'guest');
@@ -979,7 +1045,7 @@ function renderWishes(wishesArray) {
   initScrollReveals();
 }
 
-function handleWishSubmit(e) {
+async function handleWishSubmit(e) {
   e.preventDefault();
 
   const name = wishName.value.trim();
@@ -997,9 +1063,17 @@ function handleWishSubmit(e) {
     time: Date.now()
   };
 
-  const wishes = getLocalWishes();
+  // Get current cloud wishes first
+  let wishes = [];
+  try {
+    const res = await fetch(`${DB_URL}/wishes`);
+    wishes = res.ok ? await res.json() : getLocalWishes();
+  } catch (err) {
+    wishes = getLocalWishes();
+  }
+
   wishes.push(newWish);
-  saveLocalWishes(wishes);
+  await saveCloudWishes(wishes);
   
   renderWishes(wishes);
 
