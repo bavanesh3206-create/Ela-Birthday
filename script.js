@@ -249,7 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Celebrate again button
   document.getElementById('celebrateBtn').addEventListener('click', () => {
-    // Restart and play the background music
+    // Switch to and play the final song
+    bgMusic.src = 'music/Final%20song.mp3';
+    bgMusic.load();
     bgMusic.currentTime = 0;
     bgMusic.volume = 0.5;
     bgMusic.play().then(() => {
