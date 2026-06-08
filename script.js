@@ -1210,7 +1210,6 @@ function setupFinaleSlideshow() {
 
 function triggerCelebrationEffects() {
   startFireworks();
-  createBalloons();
   createConfetti();
 }
 
