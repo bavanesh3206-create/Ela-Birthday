@@ -2106,3 +2106,50 @@ body:not(.site-locked) .main-site {
   }
 }
 
+/* Mobile landscape height optimizations */
+@media (max-height: 480px) and (orientation: landscape) {
+  .gate-overlay {
+    padding: 10px;
+    align-items: flex-start;
+  }
+  .gate-card {
+    padding: 20px 25px !important;
+    margin: 10px auto !important;
+    max-width: 480px !important;
+  }
+  .gate-title {
+    font-size: 20px !important;
+    margin-bottom: 5px !important;
+  }
+  .gate-title-sm {
+    font-size: 18px !important;
+    margin-bottom: 8px !important;
+  }
+  .gate-hint {
+    font-size: 13px !important;
+    margin-bottom: 8px !important;
+  }
+  .gate-btn {
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+  }
+  .wish-form {
+    gap: 8px !important;
+  }
+  .wish-form-row {
+    gap: 2px !important;
+  }
+  .wish-form-row input {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+  .hero {
+    padding-top: 80px !important;
+    min-height: auto !important;
+  }
+  .slider-wrap {
+    max-width: 320px !important;
+    margin: 15px auto !important;
+  }
+}
+

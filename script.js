@@ -754,20 +754,24 @@ function startFloatShuffle() {
     mainSite.offsetHeight || 5000
   );
   
-  // We want multiple images visible in every place (e.g. at every Y coordinate interval)
-  // Let's divide the document height into segments of about 450px.
-  // In each segment, we place one left and one right photo (ensuring "two or more images in every place").
-  const segmentHeight = 450;
+  // Check if mobile device
+  const isMobile = window.innerWidth < 768;
+  
+  // We want multiple images visible in every place
+  // On mobile, use larger segments (850px) so we render fewer floaters to prevent GPU lag!
+  const segmentHeight = isMobile ? 850 : 450;
   const numSegments = Math.ceil(documentHeight / segmentHeight);
   
   const spawnedPhotos = [];
   
   for (let i = 0; i < numSegments; i++) {
-    // Generate both a left photo and a right photo for this segment (ensuring at least 2 images per section/viewport)
-    const positions = [
-      { isLeft: true, xMin: 2, xMax: 15 },
-      { isLeft: false, xMin: 65, xMax: 78 }
-    ];
+    // On mobile, only spawn 1 position randomly per segment to halve rendering load!
+    const positions = isMobile
+      ? [Math.random() < 0.5 ? { isLeft: true, xMin: 2, xMax: 12 } : { isLeft: false, xMin: 68, xMax: 78 }]
+      : [
+          { isLeft: true, xMin: 2, xMax: 15 },
+          { isLeft: false, xMin: 65, xMax: 78 }
+        ];
     
     positions.forEach(pos => {
       const startX = Math.random() * (pos.xMax - pos.xMin) + pos.xMin;
@@ -780,18 +784,24 @@ function startFloatShuffle() {
       floater.className = 'floating-photo';
       floater.style.backgroundImage = `url('${randomPhoto}')`;
       
-      // Dynamic size: little big (240px to 340px)
-      const size = Math.random() * 100 + 240;
+      // Dynamic size: little big
+      // On mobile, make them smaller (145px to 205px)
+      const sizeMin = isMobile ? 145 : 240;
+      const sizeRange = isMobile ? 60 : 100;
+      const size = Math.random() * sizeRange + sizeMin;
       floater.style.width = size + 'px';
       floater.style.height = size + 'px';
       
       // Scale and rotation
-      const scale = Math.random() * 0.2 + 0.9; // Scale between 0.9 and 1.1
-      const rot = Math.random() * 24 - 12; // rotation between -12deg and 12deg
+      const scale = Math.random() * 0.2 + 0.9;
+      const rot = Math.random() * 24 - 12;
       
       floater.style.left = startX + '%';
       floater.style.top = startY + 'px';
       floater.style.transform = `scale(${scale}) rotate(${rot}deg)`;
+      
+      // Hardware acceleration to prevent lag
+      floater.style.willChange = 'transform, opacity';
       
       memoryLayer.appendChild(floater);
       spawnedPhotos.push(floater);
@@ -799,39 +809,35 @@ function startFloatShuffle() {
       // Fade in smoothly with small stagger
       setTimeout(() => {
         floater.classList.add('visible');
-      }, i * 40);
+      }, i * (isMobile ? 80 : 40));
     });
   }
 
-  // Shuffle logic: every 3 seconds, pick one photo randomly, fade it out, replace it with a new photo, and fade it back in.
+  // Shuffle logic: pick one photo randomly, replace it
+  // On mobile, run less frequently (every 5 seconds) to save CPU/battery
   floatInterval = setInterval(() => {
     if (spawnedPhotos.length === 0) return;
     
     const randomIdx = Math.floor(Math.random() * spawnedPhotos.length);
     const targetFloater = spawnedPhotos[randomIdx];
     
-    // Fade out transition
     targetFloater.style.transition = 'opacity 1.5s ease-in-out, transform 12s cubic-bezier(0.16, 1, 0.3, 1)';
     targetFloater.style.opacity = '0';
     
     setTimeout(() => {
-      // Pick another random photo
       const newPhoto = MEMORY_PHOTOS[Math.floor(Math.random() * MEMORY_PHOTOS.length)];
       targetFloater.style.backgroundImage = `url('${newPhoto}')`;
-      
-      // Fade back in (restores class opacity)
       targetFloater.style.opacity = '';
     }, 1500);
-  }, 3000);
+  }, isMobile ? 5000 : 3000);
 
-  // Monitor document height expansion (e.g. if new wishes are dynamically loaded or size changes)
-  // Re-run startFloatShuffle if document height changes significantly to ensure coverage.
+  // Monitor document height expansion
   setTimeout(() => {
     const currentDocHeight = document.documentElement.scrollHeight;
     if (Math.abs(currentDocHeight - documentHeight) > 400) {
       startFloatShuffle();
     }
-  }, 1500);
+  }, 2000);
 }
 
 // 8. Memories Mosaic Shuffling Grid
@@ -1173,20 +1179,14 @@ function setupFinaleSlideshow() {
   const photoFrameImg = document.getElementById('finaleFramePhoto');
   if (!photoFrameImg) return;
   
-  // High quality dynamic set of photos, shuffled on each load
+  // Simple, personal profile and family photos only (no school group/collage photos)
   const slideshowUrls = [
     'Ela_Pic/Profile.jpg',
     'Ela_Pic/Little_Appu.png',
     'Ela_Pic/We_Three.jpeg',
-    'Ela_Pic/Schl_Pic.jpeg',
-    'Ela_Pic/School_Pic_1.jpg',
-    'Ela_Pic/School_Pic_2.jpg',
-    'Ela_Pic/School_Pic_3.jpg',
-    'Ela_Pic/School_Pic_4.jpg',
-    'Ela_Pic/School_Pic_5.jpg',
+    'Ela_Pic/We_Two.jpg',
     'Ela_Pic/Me_Amma.png',
-    'Ela_Pic/Me_Dad.png',
-    'Ela_Pic/We_Two.jpg'
+    'Ela_Pic/Me_Dad.png'
   ].sort(() => Math.random() - 0.5);
   
   let index = 0;
@@ -1397,7 +1397,8 @@ function startFireworks() {
   }
 
   function createParticles(x, y, theme) {
-    let particleCount = 70;
+    const isMobile = window.innerWidth < 768;
+    let particleCount = isMobile ? 35 : 70; // 50% fewer particles on mobile to prevent lag
     while (particleCount--) {
       particles.push(new Particle(x, y, theme));
     }
@@ -1574,7 +1575,9 @@ function resizeConfettiCanvas() {
 window.addEventListener('resize', resizeConfettiCanvas);
 
 function spawnConfettiRain() {
-  for (let i = 0; i < 90; i++) {
+  const isMobile = window.innerWidth < 768;
+  const count = isMobile ? 40 : 90; // Fewer falling particles on mobile
+  for (let i = 0; i < count; i++) {
     const x = Math.random() * confettiCanvas.width;
     const y = -20 - Math.random() * 100;
     const vx = randomRange(-1.5, 1.5);
@@ -1589,8 +1592,11 @@ function fireConfettiCannons() {
   const rightX = confettiCanvas.width;
   const rightY = confettiCanvas.height;
   
+  const isMobile = window.innerWidth < 768;
+  const count = isMobile ? 35 : 75; // Fewer cannon particles on mobile to prevent GPU lag
+  
   // Left cannon (firing up-right)
-  for (let i = 0; i < 75; i++) {
+  for (let i = 0; i < count; i++) {
     const angle = randomRange(-Math.PI / 6, -Math.PI / 3); // -30 to -60 degrees
     const velocity = randomRange(12, 25);
     const vx = Math.cos(angle) * velocity;
@@ -1599,7 +1605,7 @@ function fireConfettiCannons() {
   }
   
   // Right cannon (firing up-left)
-  for (let i = 0; i < 75; i++) {
+  for (let i = 0; i < count; i++) {
     const angle = randomRange(-Math.PI * 2/3, -Math.PI * 5/6); // -120 to -150 degrees
     const velocity = randomRange(12, 25);
     const vx = Math.cos(angle) * velocity;
