@@ -249,6 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Celebrate again button
   document.getElementById('celebrateBtn').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     triggerCelebrationEffects();
   });
 });
@@ -1159,15 +1160,25 @@ function setupFinaleSlideshow() {
   const photoFrameImg = document.getElementById('finaleFramePhoto');
   if (!photoFrameImg) return;
   
+  // High quality dynamic set of photos, shuffled on each load
   const slideshowUrls = [
     'Ela_Pic/Profile.jpg',
     'Ela_Pic/Little_Appu.png',
     'Ela_Pic/We_Three.jpeg',
-    'Ela_Pic/Schl_Pic.jpeg'
-  ];
+    'Ela_Pic/Schl_Pic.jpeg',
+    'Ela_Pic/School_Pic_1.jpg',
+    'Ela_Pic/School_Pic_2.jpg',
+    'Ela_Pic/School_Pic_3.jpg',
+    'Ela_Pic/School_Pic_4.jpg',
+    'Ela_Pic/School_Pic_5.jpg',
+    'Ela_Pic/Me_Amma.png',
+    'Ela_Pic/Me_Dad.png',
+    'Ela_Pic/We_Two.jpg'
+  ].sort(() => Math.random() - 0.5);
+  
   let index = 0;
   
-  // Initialize with the current image
+  // Initialize with the first shuffled image
   photoFrameImg.src = slideshowUrls[0];
   photoFrameImg.style.opacity = '1';
   
