@@ -115,7 +115,7 @@
       </button>
     </nav>
 
-    <audio id="bgMusic" loop preload="auto">
+    <audio id="bgMusic" preload="auto">
       <source src="music/birthday-music.mp3" type="audio/mpeg" />
     </audio>
 
@@ -282,11 +282,13 @@
     </section>
 
     <section id="finale" class="section finale-section">
-      <canvas id="fireworks" aria-hidden="true"></canvas>
-      <div id="confetti" aria-hidden="true"></div>
-      <div class="balloons" aria-hidden="true" id="balloons"></div>
       <div class="finale-content reveal">
         <p class="finale-eyebrow">With all our love</p>
+        <div class="finale-frame-container">
+          <div class="finale-gold-frame">
+            <img id="finaleFramePhoto" src="Ela_Pic/Profile.jpg" alt="Appu Photo" />
+          </div>
+        </div>
         <h1 class="finale-title">Once Again Happy Birthday Annaa <span class="heart-pulse">❤️</span></h1>
         <p class="finale-quote">"May this year bring endless opportunities, unforgettable memories, and the success you truly deserve."</p>
         <p class="finale-name">— Elavarasan · 09 June 2026 —</p>
@@ -300,6 +302,10 @@
     </footer>
   </main>
 
-  <script src="script.js?v=1.1.4"></script>
+  <canvas id="fireworks" aria-hidden="true"></canvas>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <div class="balloons" aria-hidden="true" id="balloons"></div>
+
+  <script src="script.js?v=2.0.0"></script>
 </body>
 </html>

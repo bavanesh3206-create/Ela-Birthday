@@ -19,7 +19,7 @@ if (window.location.search.includes('clear=true')) {
 const DB_URL = "https://kvdb.io/A4PNJL8vAQBd23uWKJZLDu";
 
 // One-time automatic reset / force logout of legacy test data across all devices
-const DB_VERSION = "reset_2026_06_05_v4";
+const DB_VERSION = "reset_2026_06_08_v1";
 if (localStorage.getItem('birthdaySiteDbVersion') !== DB_VERSION) {
   localStorage.removeItem('birthdaySiteAllAnswers');
   localStorage.removeItem('birthdaySiteAnswers');
@@ -179,7 +179,14 @@ const fireworksCanvas = document.getElementById('fireworks');
 const ctx = fireworksCanvas.getContext('2d');
 let fireworks = [];
 let particles = [];
+let crackles = [];
 let fireworksAnimationId = null;
+
+// Canvas Confetti
+const confettiCanvas = document.getElementById('confetti');
+const confettiCtx = confettiCanvas ? confettiCanvas.getContext('2d') : null;
+let confettiParticles = [];
+let confettiAnimationId = null;
 
 // Initial load check
 document.addEventListener('DOMContentLoaded', () => {
@@ -218,6 +225,14 @@ document.addEventListener('DOMContentLoaded', () => {
   wishForm.addEventListener('submit', handleWishSubmit);
   navToggle.addEventListener('click', toggleMobileMenu);
 
+  // Reset music nav button when song ends
+  bgMusic.addEventListener('ended', () => {
+    isAudioPlaying = false;
+    musicBtn.classList.remove('playing');
+    const label = musicBtn.querySelector('.music-label');
+    if (label) label.textContent = 'Music';
+  });
+
   // Close mobile menu when nav link is clicked
   const links = navLinks.querySelectorAll('a');
   links.forEach(link => {
@@ -228,6 +243,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Lightbox container for media expansion
   createLightbox();
+
+  // Initialize photo slideshow in the finale section
+  setupFinaleSlideshow();
 
   // Celebrate again button
   document.getElementById('celebrateBtn').addEventListener('click', () => {
@@ -1126,6 +1144,46 @@ function initScrollReveals() {
 }
 
 // 12. Celebration Effects: Balloons, Confetti, Fireworks
+
+// Helper utility functions
+function calculateDistance(p1x, p1y, p2x, p2y) {
+  return Math.sqrt(Math.pow(p1x - p2x, 2) + Math.pow(p1y - p2y, 2));
+}
+
+function randomRange(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+// Photo slideshow in the finale section
+function setupFinaleSlideshow() {
+  const photoFrameImg = document.getElementById('finaleFramePhoto');
+  if (!photoFrameImg) return;
+  
+  const slideshowUrls = [
+    'Ela_Pic/Profile.jpg',
+    'Ela_Pic/Little_Appu.png',
+    'Ela_Pic/We_Three.jpeg',
+    'Ela_Pic/Schl_Pic.jpeg'
+  ];
+  let index = 0;
+  
+  // Initialize with the current image
+  photoFrameImg.src = slideshowUrls[0];
+  photoFrameImg.style.opacity = '1';
+  
+  setInterval(() => {
+    // Fade out
+    photoFrameImg.style.opacity = '0';
+    
+    setTimeout(() => {
+      index = (index + 1) % slideshowUrls.length;
+      photoFrameImg.src = slideshowUrls[index];
+      // Fade in
+      photoFrameImg.style.opacity = '1';
+    }, 800); // match 0.8s transition in CSS
+  }, 5000);
+}
+
 function triggerCelebrationEffects() {
   startFireworks();
   createBalloons();
@@ -1138,16 +1196,17 @@ function startFireworks() {
     cancelAnimationFrame(fireworksAnimationId);
   }
 
-  // Set sizing
+  // Set sizing to full viewport
   const resizeCanvas = () => {
-    fireworksCanvas.width = fireworksCanvas.parentElement.clientWidth;
-    fireworksCanvas.height = fireworksCanvas.parentElement.clientHeight;
+    fireworksCanvas.width = window.innerWidth;
+    fireworksCanvas.height = window.innerHeight;
   };
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
   fireworks = [];
   particles = [];
+  crackles = [];
 
   class Firework {
     constructor(sx, sy, tx, ty) {
@@ -1166,8 +1225,13 @@ function startFireworks() {
       }
       this.angle = Math.atan2(ty - sy, tx - sx);
       this.speed = 2;
-      this.acceleration = 1.05;
-      this.brightness = randomRange(50, 70);
+      this.acceleration = 1.04;
+      
+      // Select firework color type: gold, purple, white (royal theme)
+      const themes = ['gold', 'purple', 'white'];
+      this.theme = themes[Math.floor(Math.random() * themes.length)];
+      
+      this.brightness = randomRange(55, 75);
       this.targetRadius = 1;
     }
 
@@ -1188,7 +1252,7 @@ function startFireworks() {
       this.distanceTraveled = calculateDistance(this.sx, this.sy, this.x + vx, this.y + vy);
 
       if (this.distanceTraveled >= this.distanceToTarget) {
-        createParticles(this.tx, this.ty);
+        createParticles(this.tx, this.ty, this.theme);
         fireworks.splice(index, 1);
       } else {
         this.x += vx;
@@ -1200,28 +1264,49 @@ function startFireworks() {
       ctx.beginPath();
       ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
       ctx.lineTo(this.x, this.y);
-      ctx.strokeStyle = `hsl(${randomRange(0, 360)}, 100%, ${this.brightness}%)`;
+      let strokeColor;
+      if (this.theme === 'gold') {
+        strokeColor = `hsl(43, 85%, ${this.brightness}%)`;
+      } else if (this.theme === 'purple') {
+        strokeColor = `hsl(270, 90%, ${this.brightness}%)`;
+      } else {
+        strokeColor = `hsl(0, 0%, ${this.brightness + 20}%)`;
+      }
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 1.5;
       ctx.stroke();
     }
   }
 
   class Particle {
-    constructor(x, y) {
+    constructor(x, y, theme) {
       this.x = x;
       this.y = y;
       this.coordinates = [];
-      this.coordinateCount = 5;
+      this.coordinateCount = 6;
       while (this.coordinateCount--) {
         this.coordinates.push([this.x, this.y]);
       }
       this.angle = randomRange(0, Math.PI * 2);
-      this.speed = randomRange(1, 10);
-      this.friction = 0.95;
-      this.gravity = 1;
-      this.hue = randomRange(0, 360);
-      this.brightness = randomRange(50, 80);
+      this.speed = randomRange(2, 7.5);
+      this.friction = randomRange(0.94, 0.96);
+      this.gravity = 0.12;
+      this.theme = theme;
+      
+      if (theme === 'gold') {
+        this.hue = randomRange(38, 48);
+        this.saturation = 95;
+      } else if (theme === 'purple') {
+        this.hue = randomRange(260, 285);
+        this.saturation = 95;
+      } else {
+        this.hue = 0;
+        this.saturation = 0;
+      }
+      
+      this.brightness = randomRange(60, 80);
       this.alpha = 1;
-      this.decay = randomRange(0.015, 0.03);
+      this.decay = randomRange(0.012, 0.025);
     }
 
     update(index) {
@@ -1232,6 +1317,11 @@ function startFireworks() {
       this.y += Math.sin(this.angle) * this.speed + this.gravity;
       this.alpha -= this.decay;
 
+      // Occasional crackles
+      if (Math.random() < 0.08 && this.alpha > 0.2 && this.alpha < 0.8) {
+        crackles.push(new Crackle(this.x, this.y, this.theme));
+      }
+
       if (this.alpha <= this.decay) {
         particles.splice(index, 1);
       }
@@ -1241,23 +1331,52 @@ function startFireworks() {
       ctx.beginPath();
       ctx.moveTo(this.coordinates[this.coordinates.length - 1][0], this.coordinates[this.coordinates.length - 1][1]);
       ctx.lineTo(this.x, this.y);
-      ctx.strokeStyle = `hsla(${this.hue}, 100%, ${this.brightness}%, ${this.alpha})`;
+      ctx.strokeStyle = `hsla(${this.hue}, ${this.saturation}%, ${this.brightness}%, ${this.alpha})`;
+      ctx.lineWidth = randomRange(1, 2.5);
       ctx.stroke();
     }
   }
 
-  function calculateDistance(p1x, p1y, p2x, p2y) {
-    return Math.sqrt(Math.pow(p1x - p2x, 2) + Math.pow(p1y - p2y, 2));
+  class Crackle {
+    constructor(x, y, theme) {
+      this.x = x;
+      this.y = y;
+      this.vx = randomRange(-1.8, 1.8);
+      this.vy = randomRange(-1.8, 1.8);
+      this.alpha = 1;
+      this.decay = randomRange(0.08, 0.15);
+      this.theme = theme;
+    }
+    
+    update(index) {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.alpha -= this.decay;
+      if (this.alpha <= this.decay) {
+        crackles.splice(index, 1);
+      }
+    }
+    
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, randomRange(0.5, 1.2), 0, Math.PI * 2);
+      let color;
+      if (this.theme === 'gold') {
+        color = `rgba(255, 248, 200, ${this.alpha})`;
+      } else if (this.theme === 'purple') {
+        color = `rgba(224, 200, 255, ${this.alpha})`;
+      } else {
+        color = `rgba(255, 255, 255, ${this.alpha})`;
+      }
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
   }
 
-  function randomRange(min, max) {
-    return Math.random() * (max - min) + min;
-  }
-
-  function createParticles(x, y) {
-    let particleCount = 30;
+  function createParticles(x, y, theme) {
+    let particleCount = 70;
     while (particleCount--) {
-      particles.push(new Particle(x, y));
+      particles.push(new Particle(x, y, theme));
     }
   }
 
@@ -1267,7 +1386,7 @@ function startFireworks() {
     
     // Clear trails
     ctx.globalCompositeOperation = 'destination-out';
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     ctx.fillRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
     ctx.globalCompositeOperation = 'lighter';
 
@@ -1283,12 +1402,18 @@ function startFireworks() {
       particles[j].update(j);
     }
 
+    let k = crackles.length;
+    while (k--) {
+      crackles[k].draw();
+      crackles[k].update(k);
+    }
+
     // Launch random firework
-    if (counter >= 15) {
-      const sx = fireworksCanvas.width / 2;
+    if (counter >= 18) {
+      const sx = randomRange(fireworksCanvas.width * 0.2, fireworksCanvas.width * 0.8);
       const sy = fireworksCanvas.height;
-      const tx = randomRange(50, fireworksCanvas.width - 50);
-      const ty = randomRange(50, fireworksCanvas.height / 2);
+      const tx = sx + randomRange(-100, 100);
+      const ty = randomRange(80, fireworksCanvas.height * 0.55);
       fireworks.push(new Firework(sx, sy, tx, ty));
       counter = 0;
     } else {
@@ -1305,99 +1430,235 @@ function startFireworks() {
   }, 15000);
 }
 
+// Canvas Confetti engine classes & functions
+class ConfettiParticle {
+  constructor(x, y, vx, vy, colorType = 'random') {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.width = randomRange(6, 12);
+    this.height = randomRange(10, 16);
+    
+    const types = ['gold', 'rose-gold', 'silver', 'purple'];
+    const selectedType = colorType === 'random' ? types[Math.floor(Math.random() * types.length)] : colorType;
+    
+    if (selectedType === 'gold') {
+      this.hue = randomRange(40, 50);
+      this.sat = 85;
+      this.light = 55;
+    } else if (selectedType === 'rose-gold') {
+      this.hue = randomRange(340, 355);
+      this.sat = 55;
+      this.light = 70;
+    } else if (selectedType === 'silver') {
+      this.hue = 0;
+      this.sat = 0;
+      this.light = 85;
+    } else { // purple
+      this.hue = randomRange(260, 280);
+      this.sat = 80;
+      this.light = 60;
+    }
+    
+    this.opacity = randomRange(0.8, 1.0);
+    this.gravity = randomRange(0.12, 0.22);
+    this.drag = randomRange(0.96, 0.99);
+    
+    // 3D rotation
+    this.rotationX = randomRange(0, Math.PI * 2);
+    this.rotationY = randomRange(0, Math.PI * 2);
+    this.rotationZ = randomRange(0, Math.PI * 2);
+    
+    this.rotSpeedX = randomRange(0.02, 0.08);
+    this.rotSpeedY = randomRange(0.02, 0.08);
+    this.rotSpeedZ = randomRange(0.01, 0.04);
+    
+    this.decay = 0;
+  }
+  
+  update() {
+    this.vx *= this.drag;
+    this.vy = this.vy * this.drag + this.gravity;
+    this.x += this.vx;
+    this.y += this.vy;
+    
+    this.rotationX += this.rotSpeedX;
+    this.rotationY += this.rotSpeedY;
+    this.rotationZ += this.rotSpeedZ;
+    
+    if (this.decay > 0) {
+      this.opacity -= this.decay;
+    }
+  }
+  
+  draw() {
+    confettiCtx.save();
+    confettiCtx.translate(this.x, this.y);
+    confettiCtx.rotate(this.rotationZ);
+    
+    // Metallic reflection simulation
+    const reflection = Math.sin(this.rotationX) * Math.cos(this.rotationY);
+    const lightAdjust = reflection * 20;
+    const currentLight = Math.max(10, Math.min(95, this.light + lightAdjust));
+    
+    confettiCtx.fillStyle = `hsla(${this.hue}, ${this.sat}%, ${currentLight}%, ${this.opacity})`;
+    
+    const scaleX = Math.sin(this.rotationX);
+    const scaleY = Math.cos(this.rotationY);
+    
+    confettiCtx.scale(scaleX, scaleY);
+    confettiCtx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    confettiCtx.restore();
+  }
+}
+
+function startConfettiLoop() {
+  if (confettiAnimationId) return;
+  
+  function loop() {
+    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    
+    let i = confettiParticles.length;
+    while (i--) {
+      const p = confettiParticles[i];
+      p.update();
+      if (p.y > confettiCanvas.height + 20 || p.opacity <= 0) {
+        confettiParticles.splice(i, 1);
+      } else {
+        p.draw();
+      }
+    }
+    
+    if (confettiParticles.length > 0) {
+      confettiAnimationId = requestAnimationFrame(loop);
+    } else {
+      confettiAnimationId = null;
+    }
+  }
+  
+  confettiAnimationId = requestAnimationFrame(loop);
+}
+
+function resizeConfettiCanvas() {
+  if (confettiCanvas) {
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+}
+
+// Global resize listener for Confetti
+window.addEventListener('resize', resizeConfettiCanvas);
+
+function spawnConfettiRain() {
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random() * confettiCanvas.width;
+    const y = -20 - Math.random() * 100;
+    const vx = randomRange(-1.5, 1.5);
+    const vy = randomRange(1, 4);
+    confettiParticles.push(new ConfettiParticle(x, y, vx, vy));
+  }
+}
+
+function fireConfettiCannons() {
+  const leftX = 0;
+  const leftY = confettiCanvas.height;
+  const rightX = confettiCanvas.width;
+  const rightY = confettiCanvas.height;
+  
+  // Left cannon (firing up-right)
+  for (let i = 0; i < 75; i++) {
+    const angle = randomRange(-Math.PI / 6, -Math.PI / 3); // -30 to -60 degrees
+    const velocity = randomRange(12, 25);
+    const vx = Math.cos(angle) * velocity;
+    const vy = Math.sin(angle) * velocity;
+    confettiParticles.push(new ConfettiParticle(leftX, leftY, vx, vy));
+  }
+  
+  // Right cannon (firing up-left)
+  for (let i = 0; i < 75; i++) {
+    const angle = randomRange(-Math.PI * 2/3, -Math.PI * 5/6); // -120 to -150 degrees
+    const velocity = randomRange(12, 25);
+    const vx = Math.cos(angle) * velocity;
+    const vy = Math.sin(angle) * velocity;
+    confettiParticles.push(new ConfettiParticle(rightX, rightY, vx, vy));
+  }
+}
+
+function spawnMiniConfettiBurst(x, y) {
+  for (let i = 0; i < 15; i++) {
+    const angle = randomRange(0, Math.PI * 2);
+    const velocity = randomRange(3, 8);
+    const vx = Math.cos(angle) * velocity;
+    const vy = Math.sin(angle) * velocity - 2; // slight upward bias
+    const p = new ConfettiParticle(x, y, vx, vy);
+    p.decay = randomRange(0.02, 0.045);
+    confettiParticles.push(p);
+  }
+  startConfettiLoop();
+}
+
+function createConfetti() {
+  resizeConfettiCanvas();
+  spawnConfettiRain();
+  fireConfettiCannons();
+  startConfettiLoop();
+}
+
 // Balloons creator
 function createBalloons() {
   const container = document.getElementById('balloons');
   if (!container) return;
   
-  // Clear any existing balloons
   container.innerHTML = '';
   
-  const colors = [
-    'rgba(167, 139, 250, 0.85)', // primary
-    'rgba(96, 165, 250, 0.85)',  // secondary
-    'rgba(245, 158, 11, 0.85)',  // accent
-    'rgba(244, 63, 94, 0.85)',   // heart
-    'rgba(52, 211, 153, 0.85)',  // green
-    'rgba(244, 114, 182, 0.85)'  // pink
+  const metallicBalloons = [
+    'radial-gradient(circle at 30% 30%, #fff9e6 0%, #fcf6ba 20%, #bf953f 65%, #8c6212 100%)', // champagne gold
+    'radial-gradient(circle at 30% 30%, #fff2f5 0%, #ffc0cb 20%, #b76e79 65%, #7c3f47 100%)', // rose gold
+    'radial-gradient(circle at 30% 30%, #ffffff 0%, #e6e6e6 20%, #b3b3b3 65%, #737373 100%)', // silver
+    'radial-gradient(circle at 30% 30%, #fdf6ff 0%, #e8d3ff 20%, #9b72cf 65%, #5c3c80 100%)', // pearl violet
+    'radial-gradient(circle at 30% 30%, #ffffff 0%, #fffdd0 20%, #eedc82 65%, #bfa643 100%)'  // cream
   ];
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 25; i++) {
     const balloon = document.createElement('div');
     balloon.className = 'balloon-element';
     
-    const sizeWidth = Math.random() * 15 + 40; // 40 - 55 px
-    const sizeHeight = sizeWidth * 1.2;
-    const startX = Math.random() * 90; // Left offset
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    const delay = Math.random() * 5; // Start delays
-    const speed = Math.random() * 4 + 8; // Seconds of rise animation
+    const sizeWidth = randomRange(45, 60);
+    const sizeHeight = sizeWidth * 1.22;
+    const startX = randomRange(5, 90);
+    const gradient = metallicBalloons[Math.floor(Math.random() * metallicBalloons.length)];
+    const delay = randomRange(0, 4.5);
+    const speed = randomRange(9, 14);
+    const animType = Math.floor(randomRange(1, 4));
 
     balloon.style.width = sizeWidth + 'px';
     balloon.style.height = sizeHeight + 'px';
     balloon.style.left = startX + '%';
-    balloon.style.background = color;
-    balloon.style.animationDelay = delay + 's';
-    balloon.style.animationDuration = speed + 's';
+    balloon.style.background = gradient;
+    balloon.style.animation = `floatUp${animType} ${speed}s linear ${delay}s forwards`;
     
-    // Add visual balloon shine highlight
     const shine = document.createElement('span');
-    shine.style.position = 'absolute';
-    shine.style.top = '6px';
-    shine.style.left = '8px';
-    shine.style.width = '8px';
-    shine.style.height = '12px';
-    shine.style.borderRadius = '50%';
-    shine.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+    shine.className = 'balloon-shine';
     balloon.appendChild(shine);
 
+    // Interactive Pop
+    balloon.addEventListener('click', (e) => {
+      if (balloon.classList.contains('popped')) return;
+      balloon.classList.add('popped');
+      
+      const rect = balloon.getBoundingClientRect();
+      const x = e.clientX || (rect.left + rect.width / 2);
+      const y = e.clientY || (rect.top + rect.height / 2);
+      
+      spawnMiniConfettiBurst(x, y);
+      
+      setTimeout(() => {
+        balloon.remove();
+      }, 150);
+    });
+
     container.appendChild(balloon);
-  }
-}
-
-// Confetti creator
-function createConfetti() {
-  const container = document.getElementById('confetti');
-  if (!container) return;
-
-  container.innerHTML = '';
-
-  const confettiColors = ['#a78bfa', '#60a5fa', '#f59e0b', '#f43f5e', '#34d399', '#f472b6', '#38bdf8', '#fb7185'];
-  
-  for (let i = 0; i < 90; i++) {
-    const particle = document.createElement('div');
-    const sizeWidth = Math.random() * 8 + 6;
-    const sizeHeight = Math.random() * 12 + 6;
-    
-    particle.style.position = 'absolute';
-    particle.style.width = sizeWidth + 'px';
-    particle.style.height = sizeHeight + 'px';
-    particle.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-    
-    // Place randomly at top
-    particle.style.top = '-20px';
-    particle.style.left = Math.random() * 100 + '%';
-    particle.style.opacity = Math.random() * 0.7 + 0.3;
-    
-    // Fall Animation parameters
-    const animName = 'fall' + i;
-    const endX = Math.random() * 200 - 100; // Left/right drift
-    const duration = Math.random() * 3 + 3.5; // Speed
-    const delay = Math.random() * 3.5;
-    
-    const keyframes = `
-      @keyframes ${animName} {
-        0% { transform: translateY(0) rotate(0deg); top: -20px; }
-        100% { transform: translateY(115vh) translateX(${endX}px) rotate(${Math.random() * 720 - 360}deg); }
-      }
-    `;
-
-    const style = document.createElement('style');
-    style.innerHTML = keyframes;
-    document.head.appendChild(style);
-
-    particle.style.animation = `${animName} ${duration}s linear ${delay}s forwards`;
-    container.appendChild(particle);
   }
 }
 
