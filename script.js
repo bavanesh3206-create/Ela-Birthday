@@ -249,7 +249,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Celebrate again button
   document.getElementById('celebrateBtn').addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Restart and play the background music
+    bgMusic.currentTime = 0;
+    bgMusic.volume = 0.5;
+    bgMusic.play().then(() => {
+      isAudioPlaying = true;
+      musicBtn.classList.add('playing');
+      const label = musicBtn.querySelector('.music-label');
+      if (label) label.textContent = 'Playing';
+    }).catch(err => {
+      console.warn("Audio autoplay blocked on celebrate again click", err);
+    });
+
     triggerCelebrationEffects();
   });
 });
